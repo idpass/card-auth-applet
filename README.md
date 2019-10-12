@@ -9,7 +9,7 @@ SW | DESCRIPTION
 0x6B00 | Incorrect parameters (P1,P2)
 0x6700 | Wrong DATA length
 
-IDPass applets support ExtendedLength APDUs.
+ID PASS applets support ExtendedLength APDUs.
 
 ### auth package
 **auth** package contains applet for Personas authentication.

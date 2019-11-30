@@ -1,6 +1,10 @@
 group 'card-applets'
 apply plugin: 'javacard'
 
+convertJavacard {
+    dependsOn ':tools:convertJavacard'
+}
+
 javacard {
     sdkVersion = "3.0.4"
     cap {
@@ -23,11 +27,10 @@ javacard {
                 rootDir.absolutePath + '/libs/globalplatform-2_1_1/',
                 rootDir.absolutePath + '/build/javacard/'
             ])
-            compile files(rootDir.absolutePath + '/build/libs/tools.jar')
+            compile files(rootDir.absolutePath + '/build/classes/java/main/')
             compile project(':tools')
         }
     }
-    
 }
 
 compileJava {

@@ -1,17 +1,25 @@
 group 'card-applets'
 apply plugin: 'javacard'
 
+// Common settings, definitions
+final def rootPath = rootDir.absolutePath
+final def libs = rootPath + '/libs'
+final def libs_gp211 = rootPath + '/libs/globalplatform-2_1_1'
+final def libsSdk = rootPath + '/libs-sdks'
+final def JC304 = libsSdk + '/jc304_kit'
+
+
 convertJavacard {
     dependsOn ':tools:convertJavacard'
 }
 
 javacard {
-    sdkVersion = "3.0.4"
-    cap {
-        sourceSets {
-            main.java.srcDirs = ['src']
-        }
+//    jckit JC304
 
+
+    sdkVersion = "3.0.4"
+
+    cap {
         packageName = 'org.idpass.auth'
         version = '0.1'
         aid = '0xF7:0x69:0x64:0x70:0x61:0x73:0x73:0x01'
@@ -22,10 +30,10 @@ javacard {
         }
 
         dependencies {
-            compile fileTree(dir: rootDir.absolutePath + '/libs/globalplatform-2_1_1', include: '*.jar')
+            compile fileTree(dir: libs_gp211, include: '*.jar')
             javacardExport files([
-                rootDir.absolutePath + '/libs/globalplatform-2_1_1/',
-                rootDir.absolutePath + '/build/javacard/'
+                    libs_gp211,
+                rootPath + '/build/javacard/'
             ])
             compile files(rootDir.absolutePath + '/build/classes/java/main/')
             compile project(':tools')

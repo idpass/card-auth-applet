@@ -177,7 +177,7 @@ public class AuthApplet extends IdpassApplet {
         }
     }
     
-    protected AuthApplet(byte[] bArray, short bOffset, byte bLength) {
+    protected AuthApplet(byte[] bArray, short bOffset, byte bLength, byte[] retval) {
         byte lengthAID = bArray[bOffset];
         short offsetAID = (short) (bOffset + 1);
         short offset = bOffset;
@@ -213,8 +213,9 @@ public class AuthApplet extends IdpassApplet {
             }
         }
 
-        this.aid_offset = offsetAID ;
-        this.aid_len = lengthAID;
+        Util.setShort(retval,(short)0x0000,offsetAID);
+        retval[2] = lengthAID;
+        retval[3] = 0x00;
         
         personasRepository = PersonasRepository.create(personaInitCount);
         this.verifierType = verifierType;

@@ -71,44 +71,14 @@ public class AuthApplet extends IdpassApplet {
     private static final byte P2_UTHENTICATE_PERSONA           = (byte) 0xCD;
 
     public static void install(byte[] bArray, short bOffset, byte bLength) {
-       
-        byte lengthAID = bArray[bOffset];
-        short offsetAID = (short) (bOffset + 1);
-        short offset = bOffset;
-        offset += (bArray[offset]); // skip aid
-        offset++;
-        offset += (bArray[offset]); // skip privileges
-        offset++;
 
-        // default params
-        short personaInitCount = 1;
-        byte verifierType = VerifierBuilder.FINGERPRINT;
-        byte secret = DEFAULT_SECRET;
+        byte[] retval = new byte[3];
+        AuthApplet applet = new AuthApplet(bArray, bOffset, bLength, retval);
 
-        // read params
-        short lengthIn = bArray[offset];
-        if (lengthIn != 0) {
-            if (lengthIn < LENGTH_INSTALL_PARAMS) {
-                ISOException.throwIt(ISO7816.SW_WRONG_DATA);
-            }
-
-            if (1 <= lengthIn) {
-                // param 1 - not mandatory
-                verifierType = bArray[(short) (offset + 1)];
-            }
-
-            if (2 <= lengthIn) {
-                // param 2 - not mandatory
-                personaInitCount = Util.makeShort(Utils.BYTE_00, bArray[(short) (offset + 2)]);
-            }
-            if (3 <= lengthIn) {
-                // param 3 - not mandatory
-                secret = bArray[(short) (offset + 3)];
-            }
-        }
-
+        short offsetAID = Util.makeShort(retval[0], retval[1]);
+        byte lengthAID =  retval[2]; 
+ 
         // GP-compliant JavaCard applet registration
-        AuthApplet applet = new AuthApplet(personaInitCount, verifierType, secret);
         applet.register(bArray, offsetAID, lengthAID);
     }
 
@@ -215,19 +185,11 @@ public class AuthApplet extends IdpassApplet {
 
         Util.setShort(retval,(short)0x0000,offsetAID);
         retval[2] = lengthAID;
-        retval[3] = 0x00;
         
         personasRepository = PersonasRepository.create(personaInitCount);
         this.verifierType = verifierType;
         this.secret = secret;
         this.listeners = new AID[0]; 
-    }
-
-    private AuthApplet(short personaInitCount, byte verifierType, byte secret) {
-        personasRepository = PersonasRepository.create(personaInitCount);
-        this.verifierType = verifierType;
-        this.secret = secret;
-        this.listeners = new AID[0];
     }
 
     private SIOAuthListener getSIOAuthListener(AID aid) {

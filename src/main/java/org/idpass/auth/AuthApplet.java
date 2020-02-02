@@ -31,7 +31,7 @@ import org.idpass.tools.Utils;
  * AuthApplet
  *
  */
-public final class AuthApplet extends IdpassApplet {
+public class AuthApplet extends IdpassApplet {
 
     private static final byte LENGTH_INSTALL_PARAMS            = 0;
 
@@ -72,43 +72,13 @@ public final class AuthApplet extends IdpassApplet {
 
     public static void install(byte[] bArray, short bOffset, byte bLength) {
 
-        byte lengthAID = bArray[bOffset];
-        short offsetAID = (short) (bOffset + 1);
-        short offset = bOffset;
-        offset += (bArray[offset]); // skip aid
-        offset++;
-        offset += (bArray[offset]); // skip privileges
-        offset++;
+        byte[] retval = new byte[3];
+        AuthApplet applet = new AuthApplet(bArray, bOffset, bLength, retval);
 
-        // default params
-        short personaInitCount = 1;
-        byte verifierType = VerifierBuilder.FINGERPRINT;
-        byte secret = DEFAULT_SECRET;
-
-        // read params
-        short lengthIn = bArray[offset];
-        if (lengthIn != 0) {
-            if (lengthIn < LENGTH_INSTALL_PARAMS) {
-                ISOException.throwIt(ISO7816.SW_WRONG_DATA);
-            }
-
-            if (1 <= lengthIn) {
-                // param 1 - not mandatory
-                verifierType = bArray[(short) (offset + 1)];
-            }
-
-            if (2 <= lengthIn) {
-                // param 2 - not mandatory
-                personaInitCount = Util.makeShort(Utils.BYTE_00, bArray[(short) (offset + 2)]);
-            }
-            if (3 <= lengthIn) {
-                // param 3 - not mandatory
-                secret = bArray[(short) (offset + 3)];
-            }
-        }
-
+        short offsetAID = Util.makeShort(retval[0], retval[1]);
+        byte lengthAID =  retval[2]; 
+ 
         // GP-compliant JavaCard applet registration
-        AuthApplet applet = new AuthApplet(personaInitCount, verifierType, secret);
         applet.register(bArray, offsetAID, lengthAID);
     }
 
@@ -176,12 +146,50 @@ public final class AuthApplet extends IdpassApplet {
                 ISOException.throwIt(ISO7816.SW_INS_NOT_SUPPORTED);
         }
     }
+    
+    protected AuthApplet(byte[] bArray, short bOffset, byte bLength, byte[] retval) {
+        byte lengthAID = bArray[bOffset];
+        short offsetAID = (short) (bOffset + 1);
+        short offset = bOffset;
+        offset += (bArray[offset]); // skip aid
+        offset++;
+        offset += (bArray[offset]); // skip privileges
+        offset++;
 
-    private AuthApplet(short personaInitCount, byte verifierType, byte secret) {
+        // default params
+        short personaInitCount = 1;
+        byte verifierType = VerifierBuilder.FINGERPRINT;
+        byte secret = DEFAULT_SECRET;
+
+        // read params
+        short lengthIn = bArray[offset];
+        if (lengthIn != 0) {
+            if (lengthIn < LENGTH_INSTALL_PARAMS) {
+                ISOException.throwIt(ISO7816.SW_WRONG_DATA);
+            }
+
+            if (1 <= lengthIn) {
+                // param 1 - not mandatory
+                verifierType = bArray[(short) (offset + 1)];
+            }
+
+            if (2 <= lengthIn) {
+                // param 2 - not mandatory
+                personaInitCount = Util.makeShort(Utils.BYTE_00, bArray[(short) (offset + 2)]);
+            }
+            if (3 <= lengthIn) {
+                // param 3 - not mandatory
+                secret = bArray[(short) (offset + 3)];
+            }
+        }
+
+        Util.setShort(retval,(short)0x0000,offsetAID);
+        retval[2] = lengthAID;
+        
         personasRepository = PersonasRepository.create(personaInitCount);
         this.verifierType = verifierType;
         this.secret = secret;
-        this.listeners = new AID[0];
+        this.listeners = new AID[0]; 
     }
 
     private SIOAuthListener getSIOAuthListener(AID aid) {

@@ -321,8 +321,6 @@ public class AuthApplet extends IdpassApplet {
             ISOException.throwIt(ISO7816.SW_WRONG_P1P2);
         }
 
-        short lc = setIncomingAndReceiveUnwrap();
-
         short personaIndex = Util.makeShort(Utils.BYTE_00, p2);
 
         if (!isPersonaExists(personaIndex)) {
@@ -338,7 +336,6 @@ public class AuthApplet extends IdpassApplet {
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
         }
 
-        short lc = setIncomingAndReceiveUnwrap();
         short personaIndex = Util.makeShort(Utils.BYTE_00, p1);
 
         if (!isPersonaExists(personaIndex)) {

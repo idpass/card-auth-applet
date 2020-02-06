@@ -72,14 +72,10 @@ public class AuthApplet extends IdpassApplet {
 
     public static void install(byte[] bArray, short bOffset, byte bLength) {
 
-        byte[] retval = new byte[3];
-        AuthApplet applet = new AuthApplet(bArray, bOffset, bLength, retval);
+        AuthApplet applet = new AuthApplet(bArray, bOffset, bLength);
 
-        short offsetAID = Util.makeShort(retval[0], retval[1]);
-        byte lengthAID =  retval[2]; 
- 
         // GP-compliant JavaCard applet registration
-        applet.register(bArray, offsetAID, lengthAID);
+        applet.register(bArray, (short)(bOffset + 1), bArray[bOffset]);
     }
 
     public boolean isPersonaExists(short personaIndex) {
@@ -147,7 +143,7 @@ public class AuthApplet extends IdpassApplet {
         }
     }
     
-    protected AuthApplet(byte[] bArray, short bOffset, byte bLength, byte[] retval) {
+    protected AuthApplet(byte[] bArray, short bOffset, byte bLength) {
         byte lengthAID = bArray[bOffset];
         short offsetAID = (short) (bOffset + 1);
         short offset = bOffset;
@@ -183,9 +179,6 @@ public class AuthApplet extends IdpassApplet {
             }
         }
 
-        Util.setShort(retval,(short)0x0000,offsetAID);
-        retval[2] = lengthAID;
-        
         personasRepository = PersonasRepository.create(personaInitCount);
         this.verifierType = verifierType;
         this.secret = secret;
@@ -345,6 +338,7 @@ public class AuthApplet extends IdpassApplet {
             ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
         }
 
+        short lc = setIncomingAndReceiveUnwrap();
         short personaIndex = Util.makeShort(Utils.BYTE_00, p1);
 
         if (!isPersonaExists(personaIndex)) {
